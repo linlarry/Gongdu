@@ -1,6 +1,8 @@
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
+import java.util.Scanner;
 
 
 public class Game {
@@ -8,6 +10,29 @@ public class Game {
 		return instance;
 	}
 	private static Game instance = new Game();
+	
+	private static Card inputCardFirst(Player player) {
+		Scanner sc = new Scanner(System.in);
+		System.out.println("Select: " + player.hand);
+		int suit = sc.nextInt();
+		int pos = sc.nextInt();
+		return player.drawCardFromHand(suit, pos);
+	}
+	
+	private static Card inputCardFollow(Player player, int suit) {
+		Scanner sc = new Scanner(System.in);
+		int pos;
+		List<Card> cards = player.hand.getCardsOfSuit(suit);
+		if (cards == null) {
+			System.out.println("Select: " + player.hand);
+			suit = sc.nextInt();
+			pos = sc.nextInt();
+		} else		{
+			System.out.println("Select: " + player.hand.getCardsOfSuit(suit));
+			pos = sc.nextInt();
+		}
+		return player.drawCardFromHand(suit, pos);
+	}
 	
 	public static void main(String[] args) {
 		Dealer dealer = Dealer.getInstance();
@@ -25,19 +50,32 @@ public class Game {
 		
 		while (!players.get(curPlayer).isDone()) {
 			if (cards.size() == 0) {
-				Card c = players.get(curPlayer).leadCard();
+				Card c;
+				if (curPlayer != 0) c = players.get(curPlayer).leadCard();
+				else {
+					c = inputCardFirst(players.get(curPlayer));
+				}
 				System.out.println("First card by player " + curPlayer + " " + c);
 				cards.add(c);
 			} else {
-				Card c = players.get(curPlayer).followCard(cards);
+				Card c;
+				if (curPlayer != 0) c = players.get(curPlayer).followCard(cards);
+				else {
+					c = inputCardFollow(players.get(curPlayer), cards.get(0).suit);
+				}
 				System.out.println("Follow card by player " + curPlayer + " " + c);
 				cards.add(c);
 			}
 			curPlayer = (curPlayer+ 1)%players.size();
-			if (cards.size() == players.size()) {	
-				System.out.println("Cards this round " + cards);
-				curPlayer = dealer.evalCards(cards);
-				players.get(curPlayer).addScoreCard(cards);
+			if (cards.size() == players.size()) {
+				List<Card> alignCards = new ArrayList<Card>();
+				int offset = players.size() - curPlayer;
+				for (int i = 0; i < players.size(); i++) {
+					alignCards.add(cards.get((i + offset)%players.size()));
+				}
+				System.out.println("Cards this round " + alignCards);
+				curPlayer = dealer.evalCards(alignCards);
+				players.get(curPlayer).addScoreCard(alignCards);
 				cards = new ArrayList<Card>();
 			}
 		}

@@ -27,7 +27,7 @@ public class Player {
 		return drawCardFromHand(suit, pos);
 	}
 	
-	private Card drawCardFromHand(int suit, int pos) {
+	Card drawCardFromHand(int suit, int pos) {
 		List<Card> cards = hand.getCardsOfSuit(suit);
 		Card drewCard = cards.remove(pos);
 		if (cards.size() == 0) hand.removeSuit(suit);
